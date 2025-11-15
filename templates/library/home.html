@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Biblioteca de Steam{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <h1 class="display-4 mb-3">
+                    <i class="bi bi-controller"></i> Biblioteca de Steam
+                </h1>
+                <p class="lead">Gestiona tu colección de juegos de Steam</p>
+                {% if user.is_authenticated %}
+                <p class="text-muted">
+                    Tienes {{ my_library_count }} juegos en tu biblioteca
+                    {% if unread_notifications_count > 0 %}
+                    | <a href="{% url 'library:notifications' %}" class="text-warning">
+                        {{ unread_notifications_count }} notificaciones nuevas
+                    </a>
+                    {% endif %}
+                </p>
+                {% else %}
+                <a href="{% url 'library:register' %}" class="btn btn-primary btn-lg">Crear Cuenta</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Games -->
+{% if featured_games %}
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="mb-4"><i class="bi bi-star-fill text-warning"></i> Juegos Destacados</h2>
+        <div class="row">
+            {% for game in featured_games %}
+            <div class="col-md-4 col-sm-6 mb-4">
+                <div class="card game-card h-100">
+                    {% if game.cover_image %}
+                    <img src="{{ game.cover_image.url }}" class="card-img-top" alt="{{ game.title }}" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ game.title }}</h5>
+                        <p class="card-text text-muted small">{{ game.developer.name|default:"Desarrollador desconocido" }}</p>
+                        <div class="mb-2">
+                            <span class="rating-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= game.rating|floatformat:0 %}
+                                        <i class="bi bi-star-fill"></i>
+                                    {% else %}
+                                        <i class="bi bi-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <span class="ms-2">{{ game.rating|floatformat:1 }}/5</span>
+                        </div>
+                        <a href="{% url 'library:game_detail' game.pk %}" class="btn btn-primary btn-sm">Ver Detalles</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Games -->
+{% if recent_games %}
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="mb-4"><i class="bi bi-calendar-event"></i> Juegos Recientes</h2>
+        <div class="row">
+            {% for game in recent_games %}
+            <div class="col-md-4 col-sm-6 mb-4">
+                <div class="card game-card h-100">
+                    {% if game.cover_image %}
+                    <img src="{{ game.cover_image.url }}" class="card-img-top" alt="{{ game.title }}" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ game.title }}</h5>
+                        <p class="card-text text-muted small">
+                            {{ game.developer.name|default:"Desarrollador desconocido" }} | 
+                            {{ game.release_date|date:"Y" }}
+                        </p>
+                        <a href="{% url 'library:game_detail' game.pk %}" class="btn btn-primary btn-sm">Ver Detalles</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Popular Games -->
+{% if popular_games %}
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="mb-4"><i class="bi bi-fire"></i> Juegos Populares</h2>
+        <div class="row">
+            {% for game in popular_games %}
+            <div class="col-md-4 col-sm-6 mb-4">
+                <div class="card game-card h-100">
+                    {% if game.cover_image %}
+                    <img src="{{ game.cover_image.url }}" class="card-img-top" alt="{{ game.title }}" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ game.title }}</h5>
+                        <p class="card-text text-muted small">
+                            {{ game.review_count }} reseñas
+                        </p>
+                        <a href="{% url 'library:game_detail' game.pk %}" class="btn btn-primary btn-sm">Ver Detalles</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+{% if user.is_authenticated %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'library:game_list' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-search"></i><br>Buscar Juegos
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'library:my_library' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-collection"></i><br>Mi Biblioteca
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'library:developer_list' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-people"></i><br>Desarrolladores
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <a href="{% url 'library:notifications' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-bell"></i><br>Notificaciones
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

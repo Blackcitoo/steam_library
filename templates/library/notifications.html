@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Notificaciones - Biblioteca de Steam{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-bell"></i> Notificaciones</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if notifications %}
+                {% for notification in notifications %}
+                <div class="border-bottom pb-3 mb-3 {% if not notification.is_read %}bg-light p-3 rounded{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5>
+                                {% if not notification.is_read %}
+                                <span class="badge bg-danger">Nueva</span>
+                                {% endif %}
+                                {{ notification.title }}
+                            </h5>
+                            <p class="mb-1">{{ notification.message }}</p>
+                            <small class="text-muted">{{ notification.created_at|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        {% if not notification.is_read %}
+                        <form method="post" action="{% url 'library:mark_notification_read' notification.pk %}" class="ms-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Marcar leída</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% if notification.link %}
+                    <a href="{{ notification.link }}" class="btn btn-sm btn-primary mt-2">Ver más</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <!-- Pagination -->
+                {% if notifications.has_other_pages %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if notifications.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ notifications.previous_page_number }}">Anterior</a>
+                        </li>
+                        {% endif %}
+                        <li class="page-item active">
+                            <span class="page-link">Página {{ notifications.number }} de {{ notifications.paginator.num_pages }}</span>
+                        </li>
+                        {% if notifications.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ notifications.next_page_number }}">Siguiente</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No tienes notificaciones.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

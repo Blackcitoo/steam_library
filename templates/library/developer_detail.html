@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ developer.name }} - Biblioteca de Steam{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        {% if developer.logo %}
+        <img src="{{ developer.logo.url }}" class="img-fluid rounded" alt="{{ developer.name }}">
+        {% endif %}
+        <div class="card mt-3">
+            <div class="card-body">
+                {% if developer.country %}
+                <p><strong>País:</strong> {{ developer.country }}</p>
+                {% endif %}
+                {% if developer.website %}
+                <p>
+                    <strong>Sitio web:</strong> 
+                    <a href="{{ developer.website }}" target="_blank">{{ developer.website }}</a>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h1>{{ developer.name }}</h1>
+                {% if developer.description %}
+                <hr>
+                <p>{{ developer.description|linebreaks }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <h2>Juegos ({{ games.paginator.count }})</h2>
+        <div class="row">
+            {% for game in games %}
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card game-card h-100">
+                    {% if game.cover_image %}
+                    <img src="{{ game.cover_image.url }}" class="card-img-top" alt="{{ game.title }}" 
+                         style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h6 class="card-title">{{ game.title }}</h6>
+                        <a href="{% url 'library:game_detail' game.pk %}" class="btn btn-primary btn-sm w-100">
+                            Ver Detalles
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Este desarrollador no tiene juegos registrados.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if games.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if games.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ games.previous_page_number }}">Anterior</a>
+                </li>
+                {% endif %}
+                <li class="page-item active">
+                    <span class="page-link">Página {{ games.number }} de {{ games.paginator.num_pages }}</span>
+                </li>
+                {% if games.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ games.next_page_number }}">Siguiente</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

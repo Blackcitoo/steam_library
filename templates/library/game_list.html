@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Juegos - Biblioteca de Steam{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1><i class="bi bi-controller"></i> Catálogo de Juegos</h1>
+        <p class="text-muted">Total: {{ total_games }} juegos</p>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="q" class="form-control" placeholder="Buscar juegos..." 
+                               value="{{ request.GET.q }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="order_by" class="form-select">
+                            <option value="-release_date" {% if request.GET.order_by == '-release_date' %}selected{% endif %}>Más Recientes</option>
+                            <option value="title" {% if request.GET.order_by == 'title' %}selected{% endif %}>Título A-Z</option>
+                            <option value="-title" {% if request.GET.order_by == '-title' %}selected{% endif %}>Título Z-A</option>
+                            <option value="-rating" {% if request.GET.order_by == '-rating' %}selected{% endif %}>Mejor Calificados</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories -->
+{% if categories %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5>Categorías Populares:</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for category in categories %}
+                    <a href="?category={{ category.id }}" class="badge bg-secondary text-decoration-none">
+                        {{ category.name }} ({{ category.game_count }})
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Games Grid -->
+<div class="row">
+    {% for game in games %}
+    <div class="col-md-4 col-sm-6 mb-4">
+        <div class="card game-card h-100">
+            {% if game.cover_image %}
+            <img src="{{ game.cover_image.url }}" class="card-img-top" alt="{{ game.title }}" 
+                 style="height: 250px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ game.title }}</h5>
+                <p class="card-text text-muted small">
+                    <i class="bi bi-building"></i> {{ game.developer.name|default:"Desarrollador desconocido" }}<br>
+                    <i class="bi bi-calendar"></i> {{ game.release_date|date:"Y" }}<br>
+                    <i class="bi bi-currency-dollar"></i> ${{ game.price }}
+                </p>
+                <div class="mb-2">
+                    <span class="rating-stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= game.rating|floatformat:0 %}
+                                <i class="bi bi-star-fill"></i>
+                            {% else %}
+                                <i class="bi bi-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                    <span class="ms-2">{{ game.rating|floatformat:1 }}/5 ({{ game.total_reviews }} reseñas)</span>
+                </div>
+                <a href="{% url 'library:game_detail' game.pk %}" class="btn btn-primary btn-sm w-100">
+                    Ver Detalles
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No se encontraron juegos.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Anterior</a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Siguiente</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+

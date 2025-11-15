@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Biblioteca - Biblioteca de Steam{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="bi bi-collection"></i> Mi Biblioteca</h1>
+                <p class="text-muted">
+                    {{ total_games }} juegos | 
+                    {{ total_hours|floatformat:0 }} horas jugadas
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'library:export_library_csv' %}" class="btn btn-success">
+                    <i class="bi bi-download"></i> Exportar CSV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="q" class="form-control" placeholder="Buscar en mi biblioteca..." 
+                               value="{{ request.GET.q }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="order_by" class="form-select">
+                            <option value="-date_added" {% if request.GET.order_by == '-date_added' %}selected{% endif %}>Más Recientes</option>
+                            <option value="game__title" {% if request.GET.order_by == 'game__title' %}selected{% endif %}>Título A-Z</option>
+                            <option value="-hours_played" {% if request.GET.order_by == '-hours_played' %}selected{% endif %}>Más Horas</option>
+                            <option value="-last_played" {% if request.GET.order_by == '-last_played' %}selected{% endif %}>Último Jugado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="favorite" id="favorite" 
+                                   {% if request.GET.favorite %}checked{% endif %}>
+                            <label class="form-check-label" for="favorite">Solo Favoritos</label>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Library Items -->
+<div class="row">
+    {% for item in library_items %}
+    <div class="col-md-4 col-sm-6 mb-4">
+        <div class="card game-card h-100">
+            {% if item.game.cover_image %}
+            <img src="{{ item.game.cover_image.url }}" class="card-img-top" alt="{{ item.game.title }}" 
+                 style="height: 200px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">
+                    {{ item.game.title }}
+                    {% if item.is_favorite %}
+                    <i class="bi bi-heart-fill text-danger"></i>
+                    {% endif %}
+                </h5>
+                <p class="card-text text-muted small">
+                    <i class="bi bi-clock"></i> {{ item.hours_played }} horas<br>
+                    <i class="bi bi-calendar"></i> Agregado: {{ item.date_added|date:"d/m/Y" }}
+                    {% if item.last_played %}
+                    <br><i class="bi bi-play-circle"></i> Último: {{ item.last_played|date:"d/m/Y" }}
+                    {% endif %}
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'library:game_detail' item.game.pk %}" class="btn btn-primary btn-sm">Ver Juego</a>
+                    <a href="{% url 'library:update_library_item' item.pk %}" class="btn btn-secondary btn-sm">Actualizar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> Tu biblioteca está vacía. 
+            <a href="{% url 'library:game_list' %}">Explora juegos</a> para agregar algunos.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if library_items.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if library_items.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ library_items.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Anterior</a>
+        </li>
+        {% endif %}
+        
+        {% for num in library_items.paginator.page_range %}
+        {% if library_items.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > library_items.number|add:'-3' and num < library_items.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if library_items.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ library_items.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Siguiente</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+

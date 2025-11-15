@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} - Perfil{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                {% if profile_user.avatar %}
+                <img src="{{ profile_user.avatar.url }}" class="rounded-circle mb-3" 
+                     alt="{{ profile_user.username }}" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                <i class="bi bi-person-circle" style="font-size: 150px;"></i>
+                {% endif %}
+                <h3>{{ profile_user.username }}</h3>
+                {% if profile_user.bio %}
+                <p class="text-muted">{{ profile_user.bio }}</p>
+                {% endif %}
+                {% if profile_user.steam_profile %}
+                <a href="{{ profile_user.steam_profile }}" target="_blank" class="btn btn-primary">
+                    <i class="bi bi-steam"></i> Perfil de Steam
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4>Estadísticas</h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h2>{{ library_count }}</h2>
+                        <p class="text-muted">Juegos en Biblioteca</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2>{{ reviews_count }}</h2>
+                        <p class="text-muted">Reseñas Publicadas</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h2>{{ total_hours|floatformat:0 }}</h2>
+                        <p class="text-muted">Horas Jugadas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>Información</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Miembro desde:</strong> {{ profile_user.date_joined|date:"d/m/Y" }}</p>
+                {% if profile_user.is_premium %}
+                <p><span class="badge bg-warning">Usuario Premium</span></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
